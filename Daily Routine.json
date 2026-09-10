@@ -1,0 +1,155 @@
+{
+  "name": "Daily Routine",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "bf931ee8-ba56-45ea-bb2e-2ecbc37e6beb",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -640,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1JtPrsyh2NruqUjLDdCkK8ojhU4btEk1plrQcjsJihrU",
+          "mode": "list",
+          "cachedResultName": "Daily Routine",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JtPrsyh2NruqUjLDdCkK8ojhU4btEk1plrQcjsJihrU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JtPrsyh2NruqUjLDdCkK8ojhU4btEk1plrQcjsJihrU/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange",
+              "headerRow": 3,
+              "firstDataRow": 4
+            }
+          }
+        }
+      },
+      "id": "b989f980-420a-4f59-a1a0-f5b2ebf129da",
+      "name": "Get row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -416,
+        16
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XybymNoVzzrfwbFn",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst todayStr = DateTime.now().setZone('Africa/Cairo').toFormat('yyyy-LL-dd');\nconst dateRe = /^\\d{4}-\\d{2}-\\d{2}$/;\nconst timeRe = /\\d{1,2}:\\d{2}/;\n\nconst todayTasks = [];\nconst trackSummary = {};\n\nfor (const item of items) {\n  const row = item.json;\n\n  const taskDate = String(row['التاريخ'] ?? '').trim();\n  const time = String(row['الوقت'] ?? '').trim();\n  // A real routine row has a date AND a time range (e.g. \"09:00–12:00\").\n  // This skips the Daily Summary / Track Summary sections below the table,\n  // whose rows carry dates or track names but numeric values elsewhere.\n  if (!dateRe.test(taskDate) || !timeRe.test(time)) continue;\n\n  const status = String(row['الحالة'] ?? '').trim().toUpperCase();\n  const track = String(row['المسار'] ?? '').trim();\n  const done = status === 'TRUE';\n\n  // 1. Collect ALL of today's tasks (done and not done)\n  if (taskDate === todayStr) {\n    todayTasks.push({\n      time: time,\n      track: track,\n      details: String(row['التفاصيل'] ?? ''),\n      link: String(row['الرابط'] ?? ''),\n      done: done,\n    });\n  }\n\n  // 2. Aggregate track statistics for the chart\n  if (track && track !== 'راحة') {\n    const planned = parseFloat(row['الساعات المخططة'] ?? 0) || 0;\n    const doneHours = parseFloat(row['الساعات المنجزة'] ?? 0) || 0;\n    if (!trackSummary[track]) trackSummary[track] = { planned: 0, done: 0 };\n    trackSummary[track].planned += planned;\n    trackSummary[track].done += doneHours;\n  }\n}\n\nconst labels = Object.keys(trackSummary);\nconst doneData = labels.map((k) => Math.round(trackSummary[k].done * 100) / 100);\nconst plannedData = labels.map((k) => Math.round(trackSummary[k].planned * 100) / 100);\n\n// Build an embeddable QuickChart image URL (renders as a normal <img> in email)\nconst chartConfig = {\n  type: 'bar',\n  data: {\n    labels: labels,\n    datasets: [\n      { label: 'المنجزة', data: doneData, backgroundColor: '#1a73e8' },\n      { label: 'المخططة', data: plannedData, backgroundColor: '#c2d7f7' },\n    ],\n  },\n};\nconst chartUrl = 'https://quickchart.io/chart?w=600&h=350&c=' + encodeURIComponent(JSON.stringify(chartConfig));\n\n// Build the tasks section\nlet tasksHtml = '';\nif (todayTasks.length) {\n  for (const t of todayTasks) {\n    const linkHtml = t.link\n      ? '<a href=\"' + t.link + '\" target=\"_blank\">🔗 رابط الدرس/المصدر</a>'\n      : '';\n    const statusBadge = t.done ? '✅ تمت' : '⏳ متبقية';\n    const itemClass = t.done ? 'task-item done' : 'task-item';\n    tasksHtml +=\n      '<div class=\"' + itemClass + '\"><b>⏱ ' + t.time + ' | ' + t.track + '</b> <span class=\"badge\">' + statusBadge + '</span><br>📌 ' +\n      t.details + '<br>' + linkHtml + '</div>';\n  }\n} else {\n  tasksHtml = '<p>📭 لا توجد مهام مجدولة لليوم.</p>';\n}\n\nconst emailHtml =\n  '<!DOCTYPE html><html dir=\"rtl\" lang=\"ar\"><head><meta charset=\"UTF-8\"><style>' +\n  'body { font-family: Arial, sans-serif; background-color: #f4f6f9; padding: 20px; }' +\n  '.card { background: #ffffff; padding: 20px; border-radius: 10px; max-width: 640px; margin: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }' +\n  'h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 8px; }' +\n  '.task-item { background: #f8f9fa; padding: 10px; margin-bottom: 8px; border-right: 4px solid #1a73e8; border-radius: 4px; }' +\n  '.task-item.done { border-right-color: #34a853; opacity: 0.85; }' +\n  '.badge { font-size: 12px; color: #555; }' +\n  'a { color: #1a73e8; text-decoration: none; font-weight: bold; }' +\n  'img { max-width: 100%; height: auto; }' +\n  '</style></head><body><div class=\"card\">' +\n  '<h2>📋 جدول مهام اليوم (' + todayStr + ')</h2>' +\n  tasksHtml +\n  '<h2>📊 نسبة التقدم والتوزيع الإجمالي</h2>' +\n  '<p>تجدين أدناه المخطط البياني المحدث لتقدمك في جميع المسارات:</p>' +\n  '<img src=\"' + chartUrl + '\" alt=\"Progress chart\" />' +\n  '</div></body></html>';\n\nreturn [{\n  json: {\n    today_str: todayStr,\n    today_tasks: todayTasks,\n    chart_labels: labels,\n    chart_done: doneData,\n    chart_planned: plannedData,\n    chart_url: chartUrl,\n    emailHtml: emailHtml,\n  },\n}];"
+      },
+      "id": "fc247f99-739a-4537-8698-51ebf685389b",
+      "name": "Code in Python",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "esraashawky09@gmail.com",
+        "subject": "=📋 مهام اليوم – {{ $json.today_str }}",
+        "message": "={{ $json.emailHtml }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fc9a9d61-d7a0-4f79-a639-0c67df7f002a",
+      "name": "Send a message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        16
+      ],
+      "webhookId": "7d991013-37d8-4aec-a36f-317a2ebc0be7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "yFPYfpCb0SeA5UMX",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "46440850-dd43-4003-9857-b9293d84a8b6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d8ddd112a514494dfa3692970b3872c291d14f88bbd9f8c611847c8e4a9b0112"
+  },
+  "nodeGroups": [],
+  "id": "T6i3SUmun9wiUayk",
+  "tags": []
+}
