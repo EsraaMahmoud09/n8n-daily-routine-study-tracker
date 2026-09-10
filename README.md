@@ -13,6 +13,8 @@ A fully automated scheduling system that fetches performance records, computes d
 ##  Workflow Architecture
 ![Daily Routine](Daily%20Routine_n8n.png)
 
+![Daily Task Tracker](Daily%20Task%20%2809-09-2026%29.png)
+
 ##  Tech Stack & Tools
 * **n8n**
 * **Python**
