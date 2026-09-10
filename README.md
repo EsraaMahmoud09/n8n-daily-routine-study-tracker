@@ -1,14 +1,31 @@
-# n8n-daily-routine-study-tracker
-
 # Automated Daily Routine & Study Progress Tracker 
 
 An automated scheduling and reporting pipeline that aggregates progress metrics from Google Sheets, processes data using Python logic, and sends periodic HTML performance summary emails.
 
-##  The Problem
-Tracking daily study tasks and operational progress manually makes it difficult to maintain consistent performance metrics and review analytical summaries over time.
+### Business Problem
 
-##  The Outcome
-A fully automated scheduling system that fetches performance records, computes daily tracking equations using embedded Python scripts, and delivers clear daily summary reports straight to your inbox.
+Manually tracking daily performance and preparing reports requires employees or managers to repeatedly collect, calculate, and review data.
+
+This can lead to:
+
+* Time spent preparing recurring reports.
+* Limited visibility into daily performance.
+* Delayed identification of performance issues.
+* Dependence on manually prepared reports.
+* Difficulty tracking performance trends over time.
+
+### Solution
+
+An automated n8n tracking and reporting workflow collects performance data from Google Sheets, calculates key metrics, and automatically sends a structured performance summary by email.
+
+### Business Outcome
+
+* Reduce time spent preparing daily reports.
+* Provide regular performance summaries.
+* Improve visibility into operational performance.
+* Identify performance issues earlier.
+* Support data-driven management decisions.
+* Turn raw operational data into actionable reports automatically.
 
 ##  Workflow Architecture
 ![Daily Routine](Daily%20Routine_n8n.png)
