@@ -34,8 +34,7 @@ An automated n8n tracking and reporting workflow collects performance data from 
 
 ##  Tech Stack & Tools
 * **n8n**
-* **Python**
 * **Google Sheets API**
-* **Gmail API**
+
 
 ---
