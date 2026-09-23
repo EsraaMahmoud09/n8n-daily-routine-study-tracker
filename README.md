@@ -1,4 +1,4 @@
-# Automated Daily Routine & Study Progress Tracker 
+<img width="934" height="386" alt="image" src="https://github.com/user-attachments/assets/764b3a62-234a-4ea6-8d52-3c7a59cd6fde" /># Automated Daily Routine & Study Progress Tracker 
 
 An automated scheduling and reporting pipeline that aggregates progress metrics from Google Sheets, processes data using Python logic, and sends periodic HTML performance summary emails.
 
@@ -30,7 +30,7 @@ An automated n8n tracking and reporting workflow collects performance data from 
 ##  Workflow Architecture
 ![Daily Routine](Daily%20Routine_n8n.png)
 
-![Daily Task Tracker](Daily%20Task%20%2809-09-2026%29.png)
+![Daily Routine Report send to Gmail](./Daily%20Routine%20Report%20send%20to%20Gmail.png)
 
 ##  Tech Stack & Tools
 * **n8n**
