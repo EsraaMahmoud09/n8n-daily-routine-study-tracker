@@ -1,5 +1,3 @@
-<img width="934" height="386" alt="image" src="https://github.com/user-attachments/assets/764b3a62-234a-4ea6-8d52-3c7a59cd6fde" /># Automated Daily Routine & Study Progress Tracker 
-
 An automated scheduling and reporting pipeline that aggregates progress metrics from Google Sheets, processes data using Python logic, and sends periodic HTML performance summary emails.
 
 ### Business Problem
