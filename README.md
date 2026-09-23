@@ -28,7 +28,7 @@ An automated n8n tracking and reporting workflow collects performance data from 
 ##  Workflow Architecture
 ![Daily Routine](Daily%20Routine_n8n.png)
 
-
+![Daily Routine Report](Daily%20Routine%20Report%20send%20to%20Gmail.png)
 
 ##  Tech Stack & Tools
 * **n8n**
